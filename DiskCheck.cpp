@@ -1,4 +1,6 @@
 #include "DiskCheck.h"
+#include <stdlib.h>
+#include <string.h>
 #include <QFileInfo>
 #include <QDir>
 #include <QList>
@@ -23,6 +25,52 @@ DiskCheck::DiskCheck(QObject *parent) : QObject(parent)
 
     this->moveToThread(&this->task);
     this->task.start();
+}
+
+int32_t DiskCheck::udiskScan()
+{
+#if 0
+    #include "windows.h"
+    uint32_t allDisk = GetLogicalDrives();
+    char diskPath[5] = { 0 };
+
+    if(allDisk != 0)
+    {
+            for (int i=0;i<26;i++)     //假定最多有12个磁盘从A开始计数
+            {
+                if ((allDisk & 1)==1)
+                {
+                    sprintf( diskPath, "%c", 'A'+i );
+                    strcat( diskPath, ":" );
+                    LPCWSTR RootPathName =(LPCWSTR)QString(diskPath).utf16();
+                    //DEBUG_TEST<<"盘符： "<<diskPath << GetDriveType(RootPathName);
+                    if (GetDriveType(RootPathName) ==  DRIVE_REMOVABLE)
+                    {
+                        QString  path(diskPath);
+                        //this->AddDisk(path);
+                        udisk_list_t udisk_tmp;
+                        udisk_tmp.udisk_path = path;
+                        udisk_tmp.is_check = true;
+                        if( GetVolumeInformation(RootPathName,0,0,0,0,0,0,0) ) //判断驱动是否准备就绪
+                        {
+                           DEBUG_TEST<<"U盘准备就绪！"<<diskPath;
+                           append_log("U盘准备就绪！" + path);
+                           udisk_tmp.is_ready = true;
+                        }
+                        else
+                        {
+                            DEBUG_TEST<<"U盘未就绪！"<<diskPath;
+                            append_log("U盘未就绪！"+path);
+                            udisk_tmp.is_ready = false;
+                        }
+                        udisk_lists.append(udisk_tmp);
+                    }
+                }
+                allDisk = allDisk>>1;
+            }
+    }
+#endif
+    return 0;
 }
 
 int32_t DiskCheck::dirWrite(QTextStream &stream, const QString &path)

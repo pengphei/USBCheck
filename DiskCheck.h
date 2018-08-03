@@ -39,6 +39,8 @@ class DiskCheck : public QObject
 public:
     explicit DiskCheck(QObject *parent = nullptr);
 
+    int32_t udiskScan();
+
     int32_t dirWrite(QTextStream& stream, const QString& path);
     bool dirCheck(const QString& path);
 
